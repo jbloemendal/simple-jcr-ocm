@@ -26,4 +26,10 @@ public class User implements Serializable {
 }
 ```
 
+## Supports
+- Inheritance
+- Aggregation
+- Collections (List, Map, Set)
+- Converters, intersecting read / write
+
 For details and examples look at the tests src/main/java/org/onehippo/simpleocm/.
