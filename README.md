@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/jbloemendal/simple-jcr-ocm.svg?branch=master)](https://travis-ci.org/jbloemendal/simple-jcr-ocm.svg?branch=master)
-
 Simple JCR OCM
 ============
 
