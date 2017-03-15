@@ -29,9 +29,6 @@ import java.util.*;
 import org.onehippo.jcrmockup.*;
 
 
-/**
- * @version "$Id: NodeBuilderTest.java 103480 2011-01-19 21:27:01Z jbloemendal $"
- */
 public class NodeBuilderTest {
 
     @Test

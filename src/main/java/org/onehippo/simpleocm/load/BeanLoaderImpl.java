@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @see JcrNodeType
  * @see JcrPath
- * @version $Id: BeanLoaderImpl.java 103480 2011-01-19 21:27:01Z jbloemendal $
  */
 public class BeanLoaderImpl implements BeanLoader, FieldSetter {
 

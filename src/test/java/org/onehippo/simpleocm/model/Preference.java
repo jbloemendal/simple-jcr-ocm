@@ -21,9 +21,6 @@ import org.onehippo.simpleocm.JcrPath;
 
 import java.io.Serializable;
 
-/**
- * @version $Id: Preference.java 133 2013-01-15 10:09:42Z mdenburger $
- */
 @JcrNodeType(value = "jcrmockup:preference")
 public class Preference implements Serializable {
 

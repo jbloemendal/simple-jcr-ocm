@@ -4,7 +4,7 @@
   <name>Simple JCR OCM</name>
   <description>Simple JCR Object Relation Mapper</description>
   <groupId>org.onehippo</groupId>
-  <artifactId>simple-ocm</artifactId>
+  <artifactId>simple-jcr-ocm</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <licenses>

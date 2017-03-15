@@ -26,7 +26,6 @@ import javax.jcr.Node;
 /**
  * Builds a node based on annotated beans.
  *
- * @version $Id: NodeBuilder.java 101644 2010-12-19 18:23:01Z jbloemendal $
  * @see JcrPath
  * @see JcrNodeType
  */

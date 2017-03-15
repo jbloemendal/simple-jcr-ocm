@@ -37,9 +37,7 @@ import org.hippoecm.repository.api.HippoNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @version $Id: RepositoryUtil.java 102838 2011-01-12 11:44:43Z mdenburger $
- */
+
 public final class RepositoryUtil {
 
     private static Logger log = LoggerFactory.getLogger(RepositoryUtil.class);

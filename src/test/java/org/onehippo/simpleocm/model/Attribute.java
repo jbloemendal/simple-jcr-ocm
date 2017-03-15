@@ -22,9 +22,7 @@ import org.onehippo.simpleocm.JcrPath;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * @version $Id: Attribute.java 133 2013-01-15 10:09:42Z mdenburger $
- */
+
 @JcrNodeType(value = "jcrmockup:attribute")
 public class Attribute implements Serializable {
 

@@ -23,9 +23,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @version $Id: User.java 133 2013-01-15 10:09:42Z mdenburger $
- */
 @JcrNodeType(value = "jcrmockup:user")
 public class User implements Serializable {
 
