@@ -1,4 +1,4 @@
-Simple JCR OCM
+JCR Simple OCM
 ============
 
 Annotate your beans to load and persist from / to JCR.
