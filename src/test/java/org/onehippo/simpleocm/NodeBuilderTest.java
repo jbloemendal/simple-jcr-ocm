@@ -229,12 +229,8 @@ public class NodeBuilderTest {
         while (nodeIterator.hasNext()) {
             Node node = nodeIterator.nextNode();
             stringProperties.remove(node.getProperty("jcrmockup:string").getString());
-            if ("foo".equals(node.getName())) {
-                sameName = true;
-            } else {
-                sameName = false;
-                break;
-            }
+            sameName = "foo".equals(node.getName());
+            assert sameName;
         }
 
         assert sameName;
