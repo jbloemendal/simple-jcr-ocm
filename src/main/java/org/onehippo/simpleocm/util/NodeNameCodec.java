@@ -126,25 +126,29 @@ public final class NodeNameCodec {
      */
 
     public static final String encode(final String name, final boolean forceSimpleName) {
-        if (name == null) {
-            throw new IllegalArgumentException("Node name can not be null.");
-        }
-        if (name.length() == 0) {
-            throw new IllegalArgumentException("Node name can not be empty.");
-        }
-        if (name.length() == 1) {
-            return encodeOneCharSimpleName(name.charAt(0));
-        }
-        if (name.length() == 2) {
-            return encodeTwoCharSimpleName(name.charAt(0), name.charAt(1));
-        }
-        // length > 2, it could be "a:b"
-        int pos = name.indexOf(':');
-        if (!forceSimpleName && pos > 0) {
-            // just return refix as-is.
-            return name.substring(0, pos) + ':' + encodeLocalName(name.substring(pos + 1));
+        if (name != null) {
+            if (name.length() != 0) {
+                if (name.length() != 1) {
+                    if (name.length() != 2) {
+                        // length > 2, it could be "a:b"
+                        int pos = name.indexOf(':');
+                        if (forceSimpleName || pos <= 0) {
+                            return encodeThreeOrMoreCharName(name);
+                        } else {
+                            // just return refix as-is.
+                            return name.substring(0, pos) + ':' + encodeLocalName(name.substring(pos + 1));
+                        }
+                    } else {
+                        return encodeTwoCharSimpleName(name.charAt(0), name.charAt(1));
+                    }
+                } else {
+                    return encodeOneCharSimpleName(name.charAt(0));
+                }
+            } else {
+                throw new IllegalArgumentException("Node name can not be empty.");
+            }
         } else {
-            return encodeThreeOrMoreCharName(name);
+            throw new IllegalArgumentException("Node name can not be null.");
         }
     }
 
@@ -176,12 +180,12 @@ public final class NodeNameCodec {
     }
 
     private static final String encodeOneCharSimpleName(final char c) {
-        if (!isOneCharSimpleName(c)) {
-            return ISO9075Encode(c);
-        } else {
+        if (isOneCharSimpleName(c)) {
             char[] s = new char[1];
             s[0] = c;
             return new String(s);
+        } else {
+            return ISO9075Encode(c);
         }
     }
 
@@ -226,32 +230,33 @@ public final class NodeNameCodec {
     }
 
     private static final String encodeLocalName(final String localName) {
-        if (localName.length() == 0) {
-            throw new IllegalArgumentException("Local name part cannot be empty.");
-        } else if (localName.length() == 1) {
-            if (isNonSpace(localName.charAt(0))) {
-                return localName;
+        if (localName.length() != 0) {
+            if (localName.length() == 1) {
+                if (isNonSpace(localName.charAt(0))) {
+                    return localName;
+                } else {
+                    return ISO9075Encode(localName.charAt(0));
+                }
+            } else if (localName.length() == 2) {
+                StringBuilder sb = new StringBuilder();
+                // unrolled loop
+                if (isNonSpace(localName.charAt(0))) {
+                    sb.append(localName.charAt(0));
+                } else {
+                    sb.append(ISO9075Encode(localName.charAt(0)));
+                }
+                if (isNonSpace(localName.charAt(1))) {
+                    sb.append(localName.charAt(1));
+                } else {
+                    sb.append(ISO9075Encode(localName.charAt(1)));
+                }
+                return sb.toString();
             } else {
-                return ISO9075Encode(localName.charAt(0));
+                return encodeThreeOrMoreCharName(localName);
             }
-        } else if (localName.length() == 2) {
-            StringBuilder sb = new StringBuilder();
-            // unrolled loop
-            if (isNonSpace(localName.charAt(0))) {
-                sb.append(localName.charAt(0));
-            } else {
-                sb.append(ISO9075Encode(localName.charAt(0)));
-            }
-            if (isNonSpace(localName.charAt(1))) {
-                sb.append(localName.charAt(1));
-            } else {
-                sb.append(ISO9075Encode(localName.charAt(1)));
-            }
-            return sb.toString();
         } else {
-            return encodeThreeOrMoreCharName(localName);
+            throw new IllegalArgumentException("Local name part cannot be empty.");
         }
-
     }
 
     /**

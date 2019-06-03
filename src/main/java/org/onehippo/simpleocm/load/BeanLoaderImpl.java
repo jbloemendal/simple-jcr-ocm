@@ -284,8 +284,10 @@ public class BeanLoaderImpl implements BeanLoader, FieldSetter {
                 loadFieldsForClass(node, bean, clazz);
                 final Class<?> superClazz = clazz.getSuperclass();
                 JcrNodeType nodeTypeAnnotation = superClazz.getAnnotation(JcrNodeType.class);
-                if (nodeTypeAnnotation != null && !BeanLoader.class.equals(nodeTypeAnnotation.loader())) {
-                    instantiateBeanLoader(nodeTypeAnnotation.loader()).loadBean(node, bean);
+                if (nodeTypeAnnotation != null) {
+                    if (!BeanLoader.class.equals(nodeTypeAnnotation.loader())) {
+                        instantiateBeanLoader(nodeTypeAnnotation.loader()).loadBean(node, bean);
+                    }
                 }
                 clazz = clazz.getSuperclass();
             }

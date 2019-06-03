@@ -111,25 +111,28 @@ public class NodeBuilderImpl implements NodeBuilder, PropertyBuilder {
      * @throws javax.jcr.RepositoryException if removing a existing child node with clashing name - key fails
      */
     private void buildChildNodesFromMap(final Node parent, final Map map, final List<Class<?>> actualTypeParameters, final Class<?> firstTypeParameter) throws ContentNodeBindingException, RepositoryException {
-        if (actualTypeParameters.size() != 2 || !String.class.equals(firstTypeParameter)) {
-            throw new UnsupportedOperationException("The path * is only supported for building Map<String, Object@JcrNodeType>.");
-        }
-        final JcrNodeType typeParameterAnnotation = actualTypeParameters.get(1).getAnnotation(JcrNodeType.class);
-        if (typeParameterAnnotation == null) {
-            throw new UnsupportedOperationException("The path * is only supported for building Map<String, Object@JcrNodeType>.");
-        }
+        if (actualTypeParameters.size() == 2 && String.class.equals(firstTypeParameter)) {
 
-        removeMissingChildren(parent, map, typeParameterAnnotation);
-
-        if (map == null) {
-            return;
-        }
-        logger.debug("Building child nodes from map");
-        for (Object object : map.entrySet()) {
-            if (object instanceof Map.Entry) {
-                final Map.Entry entry = (Map.Entry)object;
-                build(parent, String.valueOf(entry.getKey()), entry.getValue(), typeParameterAnnotation.sameNameSiblings());
+            final JcrNodeType typeParameterAnnotation = actualTypeParameters.get(1).getAnnotation(JcrNodeType.class);
+            if (typeParameterAnnotation == null) {
+                throw new UnsupportedOperationException("The path * is only supported for building Map<String, Object@JcrNodeType>.");
             }
+
+            removeMissingChildren(parent, map, typeParameterAnnotation);
+
+            if (map == null) {
+                return;
+            }
+            logger.debug("Building child nodes from map");
+            for (Object object : map.entrySet()) {
+                if (object instanceof Map.Entry) {
+                    final Map.Entry entry = (Map.Entry)object;
+                    build(parent, String.valueOf(entry.getKey()), entry.getValue(), typeParameterAnnotation.sameNameSiblings());
+                }
+            }
+
+        } else {
+            throw new UnsupportedOperationException("The path * is only supported for building Map<String, Object@JcrNodeType>.");
         }
     }
 
@@ -138,19 +141,18 @@ public class NodeBuilderImpl implements NodeBuilder, PropertyBuilder {
         while (childNodeIterator.hasNext()) {
             final Node childNode = childNodeIterator.nextNode();
             final String decodedChildNodeName = NodeNameCodec.decode(childNode.getName());
-            if (!typeParameterAnnotation.value().equals(childNode.getPrimaryNodeType().getName())) {
-                continue;
-            }
-            if (map == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Map is null removing '{}' of type {}", childNode.getPath(), typeParameterAnnotation.value());
+            if (typeParameterAnnotation.value().equals(childNode.getPrimaryNodeType().getName())) {
+                if (map == null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Map is null removing '{}' of type {}", childNode.getPath(), typeParameterAnnotation.value());
+                    }
+                    childNodeIterator.remove();
+                } else if (!map.containsKey(decodedChildNodeName)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Map doesn't contain child node of name {}, removing '{}'", decodedChildNodeName, childNode.getPath());
+                    }
+                    childNodeIterator.remove();
                 }
-                childNodeIterator.remove();
-            } else if (!map.containsKey(decodedChildNodeName)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Map doesn't contain child node of name {}, removing '{}'", decodedChildNodeName, childNode.getPath());
-                }
-                childNodeIterator.remove();
             }
         }
     }
@@ -241,26 +243,25 @@ public class NodeBuilderImpl implements NodeBuilder, PropertyBuilder {
         for (Field field : fields) {
             final Annotation annotations[] = field.getAnnotations();
             for (Annotation annotation : annotations) {
-                if (!(annotation instanceof JcrPath)) {
-                    continue;
-                }
-                String relativePath = ((JcrPath) annotation).value();
-                if (StringUtils.isBlank(relativePath)) {
-                    relativePath = field.getName();
-                }
-                final Class<? extends Converter> converterClass = ((JcrPath) annotation).converter();
-                if (!Converter.class.equals(converterClass)) {
-                    try {
-                        logger.debug("Building property '{}' for field '{}' with converter '{}'", new Object[]{relativePath, field.getName(), converterClass});
-                        converterClass.newInstance().buildProperty(node, relativePath, field, object);
-                    } catch (IllegalAccessException accessException) {
-                        throw new ContentNodeBindingException("Error building the property '" + relativePath + "' for class " + clazz, accessException);
-                    } catch (InstantiationException instantiationException) {
-                        throw new ContentNodeBindingException("Error building the property '" + relativePath + "' for class " + clazz, instantiationException);
+                if ((annotation instanceof JcrPath)) {
+                    String relativePath = ((JcrPath) annotation).value();
+                    if (StringUtils.isBlank(relativePath)) {
+                        relativePath = field.getName();
                     }
-                } else {
-                    logger.debug("Building property '{}' for field '{}'", relativePath, field.getName());
-                    buildProperty(node, relativePath, field, object);
+                    final Class<? extends Converter> converterClass = ((JcrPath) annotation).converter();
+                    if (Converter.class.equals(converterClass)) {
+                        logger.debug("Building property '{}' for field '{}'", relativePath, field.getName());
+                        buildProperty(node, relativePath, field, object);
+                    } else {
+                        try {
+                            logger.debug("Building property '{}' for field '{}' with converter '{}'", new Object[]{relativePath, field.getName(), converterClass});
+                            converterClass.newInstance().buildProperty(node, relativePath, field, object);
+                        } catch (IllegalAccessException accessException) {
+                            throw new ContentNodeBindingException("Error building the property '" + relativePath + "' for class " + clazz, accessException);
+                        } catch (InstantiationException instantiationException) {
+                            throw new ContentNodeBindingException("Error building the property '" + relativePath + "' for class " + clazz, instantiationException);
+                        }
+                    }
                 }
             }
         }
@@ -318,11 +319,13 @@ public class NodeBuilderImpl implements NodeBuilder, PropertyBuilder {
             return null;
         }
         bind(object, node);
-        if (!ContentNodeBinder.class.equals(nodeTypeAnnotation.binder())) {
+        if (ContentNodeBinder.class.equals(nodeTypeAnnotation.binder())) {
+            return node;
+        } else {
             final ContentNodeBinder nodeBinder = instantiateBinder(nodeTypeAnnotation.binder());
             nodeBinder.bind(object, node);
+            return node;
         }
-        return node;
     }
 
     /**
